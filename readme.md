@@ -32,11 +32,7 @@ std::unique_ptr img1{ ::cvCreateImage(...), [](IplImage* p){ ::cvReleaseImage(&p
 Every lambda gets a unique type, so using a lambda as a deleter requires naming it to make it usable both as the class template argument (via `decltype()`) and as the constructor argument.  
 It is currently not possible to use in-line unnamed lambdas as custom deleters.  
 
-According to [cppreference](http://en.cppreference.com/w/cpp/memory/unique_ptr/unique_ptr):
-
-> _There is no class template argument deduction from pointer type because it is impossible to distinguish a pointer obtained from array and non-array forms of new._
-
-In the general case, this may be true and lead to undefined-behavior if the wrong default deleter is called (`delete` or `delete[]`) or when providing `operator[]` to a non-array pointer type. However, when the user is providing a custom deleter, this deleter is called regardless of the ambiguity in the default deleter case.    
+There is no class template argument deduction from a raw pointer type because it is impossible to distinguish a pointer obtained from array and non-array forms of new. This may be true in the general case, and may lead to undefined-behavior if the wrong default deleter is called (`delete` or `delete[]`) or when providing `operator[]` to a non-array pointer type. However, when the user is providing a custom deleter, this custom deleter will be called unconditionally regardless of any ambiguity in the default deleter case.    
 
 It seems that **[unique.ptr.single.ctor]/16** is overly strict.
 
@@ -48,11 +44,11 @@ This use case is basically the whole point of having `unique_ptr` support delete
 
 Relax the requirements of [unique.ptr.single.ctor]/16 to allow class template argument deduction in the case of a raw pointer and a user provided deleter.  
 
-Add a deduction guideline: `template<typename T, typename D> unique_ptr(T* p, D d) -> unique_ptr<T,D>;`
+Add a deduction guide: `template<typename T, typename D> unique_ptr(T* p, D d) -> unique_ptr<T,D>;`
 
 In this case the raw pointer type `T*` shall default to a *non-array* pointer and `operator[]` shall be *not* generated.
 
-For raw array pointers, the user will still have to explicitly specify the template arguments as before.
+For raw _array pointers_, the user will *still* have to explicitly specify the template arguments as before if `operator[]` support is desired.
 
 ## Discussion
 
@@ -71,4 +67,4 @@ If and when such a form will be added it would presumably support automatic type
 
 ## Acknowledgements
 
-Thanks to Agustín Bergé, Peter Dimov and Timur Doumler for a fruitful discussion and suggesting that this should be a proposal.
+I'd like to thank Agustín Bergé, Peter Dimov and Timur Doumler for very fruitful discussions and suggesting that this should be a proposal.
