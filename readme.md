@@ -44,11 +44,19 @@ This use case is basically the whole point of having `unique_ptr` support delete
 
 Relax the requirements of [unique.ptr.single.ctor]/16 to allow class template argument deduction in the case of a raw pointer and a user provided deleter.  
 
-Add a deduction guide: `template<typename T, typename D> unique_ptr(T* p, D d) -> unique_ptr<T,D>;`
+Add the following two deduction guides: 
+```
+template<typename T, typename D>
+unique_ptr(T* p, D d)->unique_ptr<T, D>;
 
-In this case the raw pointer type `T*` shall default to a *non-array* pointer and `operator[]` shall be *not* generated.
+template<class T, class D> 
+unique_ptr(T, D)->unique_ptr<typename pointer_traits<typename D::pointer>::element_type, D>;
+```
+
+In this case the raw pointer type `T*` shall default to a *non-array* pointer behavior and `operator[]` shall be *not* generated.
 
 For raw _array pointers_, the user will *still* have to explicitly specify the template arguments as before if `operator[]` support is desired.
+
 
 ## Discussion
 
