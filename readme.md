@@ -52,6 +52,18 @@ For raw _array pointers_, the user will *still* have to explicitly specify the t
 
 ## Discussion
 
+In [P0433R1 §20.11 [smartptr]](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0433r1.html), the authors propose adding various deduction guides for `unique_ptr`, `shared_ptr` and `weak_ptr`. The proposed guides for `unique_ptr` also support the use case where a custom deleter is *not* specified. In that case the guide defaults to *non-array* raw pointers. As discussed above this might lead to undefined behaviour because the non-array version of `delete` will be applied to the array. This part of the propsal was removed from newer revisions of the proposal precisely for this reason.   
+The current proposal is limited only to the case where a custom deleter is supplied where UB is not possible. 
+
+P0433R1 proposes a 3rd `unique_ptr` deduction guide:  
+`template<class U, class V> unique_ptr(U, V) -> unique_ptr<typename pointer_traits<V::pointer>::element_type, V>;`  
+This will not affect the case of using lambdas as deleters. Further examination of this guide is TBD before submission.
+
+Finally, note that the current proposal is not so pertinent to `shared_ptr<>` since the Deleter type is _not_ part of the `shared_ptr<>` type. 
+
+
+#### Desirata
+
 It would have been desirable if one could "cast" the raw pointer `T* p` to the *incomplete type* `T[]` such that the following would generate the array form of `unique_ptr<T[],D>` with `operator[]`:
 
 ```
