@@ -11,11 +11,11 @@ Reply-To: Adi Shavit `<my-email>`*
 
 Consider the following example:
 ```
-std::unique_ptr<HANDLE, decltype(CloseHandle)> fh0{ CreateFile(), CloseHandle }; // this is okay
-std::unique_ptr fh1{ CreateFile(), CloseHandle };                                // this is ill-formed
+std::unique_ptr<HANDLE, decltype(CloseHandle)> fh0{ CreateFile(...), CloseHandle }; // this is okay
+std::unique_ptr fh1{ CreateFile(...), CloseHandle };                                // this is ill-formed
 ```
 
-The second expression is ill-formed due to the wording in [[unique.ptr.single.ctor]/16](http://eel.is/c++draft/unique.ptr#single.ctor-16):  
+The second expression is ill-formed due to the wording in [**[unique.ptr.single.ctor]/16**](http://eel.is/c++draft/unique.ptr#single.ctor-16):  
 
 > *Remarks:* If class template argument deduction ([over.match.class.deduct]) would select a function template corresponding to either of these constructors, then the program is ill-formed.
 
@@ -38,9 +38,9 @@ According to [cppreference](http://en.cppreference.com/w/cpp/memory/unique_ptr/u
 
 In the general case, this may be true and lead to undefined-behavior if the wrong default deleter is called (`delete` or `delete[]`) or when providing `operator[]` to a non-array pointer type. However, when the user is providing a custom deleter, this deleter is called regardless of the ambiguity in the default deleter case.    
 
-[unique.ptr.single.ctor]/16 seems to be overly strict.
+It seems that **[unique.ptr.single.ctor]/16** is overly strict.
 
-Essentially, this use case is basically the whole point of having `unique_ptr` support deleters and the current wording makes the code cumbersome and error prone.
+This use case is basically the whole point of having `unique_ptr` support deleters and the current wording makes the code cumbersome and error prone.
 
 ## Proposal
 
@@ -71,4 +71,4 @@ If and when such a form will be added it would presumably support automatic type
 
 ## Acknowledgements
 
-Thanks to Agustín Bergé, Peter Dimov and Timur Doumler for suggesting that this should be a proposal.
+Thanks to Agustín Bergé, Peter Dimov and Timur Doumler for a fruitful discussion and suggesting that this should be a proposal.
